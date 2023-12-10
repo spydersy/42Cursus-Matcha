@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {
-        console.log('___DBG___RET___', this.authService.test());
+        this.authService.test();
     }
 
     @Get('signup')

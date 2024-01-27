@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  dev-db:
+    image: postgres:13
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: matcha
+      POSTGRES_PASSWORD: matcha
+      POSTGRES_DB: matcha
+    networks:
+      - matchaNetwork
+networks:
+  matchaNetwork:

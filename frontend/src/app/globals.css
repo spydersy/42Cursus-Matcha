@@ -8,6 +8,16 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+* {
+  user-select: none;
+}
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -30,4 +40,109 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.carousel-image {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-image.active {
+  opacity: 100;
+  /* Keep the position as absolute to avoid layout shifts */
+}
+
+.card {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  width: 300px; /* Set a specific width */
+  height: 400px; /* Set a specific height */
+}
+
+.stacked-cards {
+  position: relative;
+  width: 100%; /* Set the desired width */
+  height: 1000px; /* Set the desired height */
+}
+
+.stacked-cards .card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0; /* Add this to maintain the width */
+  bottom: 0; /* Add this to maintain the height */
+  width: 100%; /* Set the card to fill the container */
+  height: 100%; /* Set the card to fill the container */
+  will-change: transform; /* Optimizes animations */
+  opacity: 0; /* Hide all cards by default */
+  transition: opacity 0.5s, transform 0.5s; /* Transition for opacity and swipe */
+}
+
+/* When a card is swiped, apply a different transform */
+.stacked-cards .card.swiped {
+  transform: translateY(-500px); /* Move the card up and out of view */
+}
+
+
+@keyframes ripple {
+  from {
+
+    width: 50px;
+    height: 50px;
+    opacity: 1;
+  }
+  to {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+}
+
+.circle {
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  display: block;
+  border-radius: 50%;
+  position: absolute;
+  border: 2px solid #FDE047;
+  transform: translate(-50%, -50%);
+  background: rgba(217, 255, 0, 0.1);
+  animation: ripple 4s ease infinite;
+}
+
+.ripple-photo {
+  top: 50%;
+  left: 50%;
+  
+  display: block;
+  border-radius: 50%;
+  position: absolute;
+  border: 2px solid #ffffff;
+  transform: translate(-50%, -50%);
+}
+
+.ripple-photo img {
+  width: 275px;
+  height: 100%;
+
+  border-radius: 50%; /* Optional, if you want the image itself to be explicitly circular regardless of its original shape */
+}
+
+.container {
+  width: 30rem;
+  height: 30rem;
+  margin: 0 auto;
+  display: block;
+  position: relative;
+  /* cosmetics */
+  /* border: 1px solid #eee; */
+  border-radius: 3px;
+  box-shadow: 0 0 7px 0px rgba(100, 100, 100, 0.15);
 }

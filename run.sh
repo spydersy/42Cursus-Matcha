@@ -8,4 +8,4 @@ echo "Install Flask"
 pip install Flask
 
 echo "Start Application"
-cd app && flask --appmain run --debug
+cd app && flask --app main run --debug

@@ -1,6 +1,6 @@
 # compiled output
-/dist
-/node_modules
+dist/
+node_modules/
 
 # Logs
 logs
@@ -33,3 +33,18 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Environment / secrets — NEVER commit
+.env
+frontend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.pytest_cache/
+
+# User uploads (profile pictures) — never commit
+backend/uploads/
+uploads/

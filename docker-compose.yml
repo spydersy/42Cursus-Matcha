@@ -1,0 +1,93 @@
+name: matcha
+
+# Every service runs in its own container:
+#   neo4j    → graph database (bolt 7687, browser 7474)
+#   backend  → Flask API + Socket.IO (:5001 — 5000 is taken by macOS AirPlay)
+#   frontend → Vite dev server (:5173)
+#   mailpit  → dev SMTP catcher (smtp 1025, inbox UI 8025)
+#
+# Infra only (while backend/frontend skeletons land in T2/T3):
+#   docker compose up -d neo4j mailpit
+# Full stack (once T2/T3 are done):
+#   docker compose up -d
+
+services:
+  neo4j:
+    image: neo4j:5-community
+    container_name: matcha-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474" # Neo4j browser
+      - "7687:7687" # Bolt
+    environment:
+      # NB: only NEO4J_* settings may be passed here — the Neo4j entrypoint
+      # maps every NEO4J_* var to a config key and fails on unknown ones.
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      # Credentials interpolated by compose at config time (dev-only password).
+      test:
+        [
+          "CMD-SHELL",
+          "cypher-shell -a bolt://localhost:7687 -u ${NEO4J_USER} -p '${NEO4J_PASSWORD}' 'RETURN 1' >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s # Neo4j cold start is slow
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: matcha-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025" # inbox UI
+      - "1025:1025" # SMTP
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: matcha-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # In-network overrides (host values in .env target local dev)
+      NEO4J_URI: bolt://neo4j:7687
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend:/app # hot reload: edit code on the host
+      - matcha_uploads:/app/uploads # profile pictures persist, outside web root
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: matcha-frontend
+    restart: unless-stopped
+    environment:
+      # Browser-side URLs → must stay localhost
+      VITE_API_URL: http://localhost:5001
+      VITE_SOCKET_URL: http://localhost:5001
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app # hot reload
+      - /app/node_modules # keep container's node_modules, don't shadow with host's
+    depends_on:
+      - backend
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  matcha_uploads:
